@@ -1,0 +1,23 @@
+# Python
+backend/.venv/
+**/__pycache__/
+*.py[cod]
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Secrets
+.env
+backend/.env
+frontend/.env
+
+# Generated document data
+backend/data/uploads/*
+!backend/data/uploads/.gitkeep
+
+backend/data/processed/*
+!backend/data/processed/.gitkeep
+
+backend/data/vectorstores/*
+!backend/data/vectorstores/.gitkeep
