@@ -4,6 +4,20 @@ AI Document Search is a full-stack web application for exploring the contents of
 
 The project is an applied example of retrieval-augmented generation (RAG). Its emphasis is not simply on producing fluent responses, but on maintaining a visible relationship between an answer and the source material from which it was derived.
 
+## Screenshots
+
+Uploading a PDF and reviewing the extracted page/chunk counts before asking a question:
+
+![Upload result and empty chat state](frontend/screenshots/UI.png)
+
+A full session: an uploaded document with an ongoing multi-turn conversation:
+
+![Uploaded document with an active conversation](frontend/screenshots/PDFandChatUI.png)
+
+Close-up of a multi-turn conversation, with each answer citing the page-level source chunks it was grounded in:
+
+![Multi-turn conversation with cited sources](frontend/screenshots/ChatUI.png)
+
 ## Key features
 
 - Upload and process PDF documents up to 10 MB.
@@ -57,9 +71,12 @@ ai-document-search/
 |   |   |-- uploads/        # Uploaded PDFs (generated locally)
 |   |   |-- processed/      # Extracted and chunked text as JSON
 |   |   `-- vectorstores/   # Per-document FAISS indexes
+|   |-- evaluation/         # Retrieval and generation-quality evaluation scripts
+|   |-- tests/              # Automated backend tests (pytest)
 |   `-- pyproject.toml
 |-- frontend/
 |   |-- public/
+|   |-- screenshots/        # UI screenshots used in this README
 |   |-- src/
 |   |   `-- components/     # Upload and document-chat interfaces
 |   `-- package.json
@@ -130,6 +147,43 @@ VITE_API_BASE_URL=http://127.0.0.1:8000
 | `POST` | `/documents/{document_id}/search` | Retrieve semantically similar text chunks |
 | `POST` | `/documents/{document_id}/ask` | Generate a document-grounded answer with sources |
 
+## Evaluation
+
+Retrieval and generation quality are both measured with scripts under `backend/evaluation/`, run against a hand-labeled question set (`eval_questions.json`) tied to a specific uploaded document.
+
+### Retrieval quality
+
+`evaluate_retrieval.py` computes recall@k, precision@k, and mean reciprocal rank (MRR) by comparing the pages of the retrieved chunks against each question's expected page(s):
+
+```bash
+cd backend
+uv run python -m evaluation.evaluate_retrieval --k 1 3 5
+```
+
+Example results from the 20-question evaluation set used during development:
+
+| k | Recall@k | Precision@k | MRR@k |
+| --- | --- | --- | --- |
+| 1 | 80.0% | 80.0% | 0.800 |
+| 3 | 100.0% | 46.7% | 0.875 |
+| 5 | 100.0% | 34.0% | 0.875 |
+
+Recall reaches 100% by k=3, confirming the default `k=4` used by the `/ask` endpoint reliably retrieves the relevant page; precision naturally drops as more (partially irrelevant) chunks are pulled in alongside it.
+
+### Generation quality
+
+`evaluate_generation.py` goes a step further and checks the actual generated answer, using a second LLM call as a judge to grade:
+
+- **Faithfulness** — is every claim in the answer supported by the retrieved context (catches hallucination)?
+- **Relevance** — does the answer actually address the question asked?
+
+```bash
+cd backend
+uv run python -m evaluation.evaluate_generation --limit 3
+```
+
+On a small sample (3 questions) evaluated during development, both faithfulness and relevance rates were 100%. This script makes real LLM calls for both the answer and the judge, so cost scales with the number of questions evaluated — run without `--limit` for a more robust signal across the full set.
+
 ## Data and privacy considerations
 
 Uploaded PDFs, processed text, and FAISS indexes are written to the local `backend/data` directory and excluded from version control. However, document chunks and user questions are sent to OpenAI for embedding or answer generation. The application should therefore not be used with confidential, regulated, or personally sensitive documents unless the deployment and data-handling arrangements have been reviewed appropriately.
@@ -138,16 +192,16 @@ The generated answers should be treated as reading assistance rather than author
 
 ## Current limitations
 
-- Only one PDF is active in the interface at a time.
+- Only one PDF is active in the interface at a time; there is no persisted list of previously uploaded documents.
 - Scanned or image-only PDFs are not supported because optical character recognition is not implemented.
 - Password-protected PDFs cannot be processed.
 - Generated files and indexes are stored locally without a database or user-account layer.
-- Automated tests and production deployment configuration are not yet included.
+- Production deployment configuration (containerization, hosting, CI) is not yet included.
 
 ## Future directions
 
-Potential extensions include optical character recognition, multi-document collections, persistent document management, stronger relevance evaluation, streaming answers, automated testing, and authentication for multi-user deployments.
+Potential extensions include optical character recognition, multi-document collections with persistent document management, streaming answers, and authentication for multi-user deployments.
 
 ## License
 
-No license has been specified for this repository. Add an appropriate license before redistributing or reusing the project outside its intended context.
+MIT — see [LICENSE](LICENSE).

@@ -102,70 +102,89 @@ function ChatPanel({ document }) {
 
   if (!document) {
     return (
-      <section>
+      <section className="card chat-card">
         <h2>Document chat</h2>
-        <p>Upload a PDF to begin asking questions.</p>
+        <p className="empty-state">Upload a PDF to begin asking questions.</p>
       </section>
     );
   }
 
   return (
-    <section>
-      <h2>Document chat</h2>
+    <section className="card chat-card">
+      <div className="chat-header">
+        <h2>Document chat</h2>
+        <span className="chat-doc-name">{document.original_filename}</span>
+      </div>
 
-      <p>
-        Active document: <strong>{document.original_filename}</strong>
-      </p>
-
-      <div>
+      <div className="chat-messages">
         {messages.length === 0 && (
-          <p>Ask a question about the uploaded document.</p>
+          <p className="empty-state">
+            Ask a question about the uploaded document.
+          </p>
         )}
 
         {messages.map((message, messageIndex) => (
-          <article key={`${message.role}-${messageIndex}`}>
-            <h3>{message.role === "user" ? "You" : "Assistant"}</h3>
+          <div
+            key={`${message.role}-${messageIndex}`}
+            className={`chat-message chat-message--${message.role}`}
+          >
+            <span className="sr-only">
+              {message.role === "user" ? "You said:" : "Assistant said:"}
+            </span>
 
-            <p>{message.content}</p>
+            <div className="chat-bubble">{message.content}</div>
 
             {message.sources?.length > 0 && (
-              <div>
-                <h4>Sources</h4>
-
-                <ul>
-                  {message.sources.map((source) => (
-                    <li key={source.chunk_id}>
-                      Source {source.source_number}: {source.filename}, page{" "}
-                      {source.page_number}
-                    </li>
-                  ))}
-                </ul>
+              <div className="chat-sources">
+                {message.sources.map((source) => (
+                  <span key={source.chunk_id} className="source-chip">
+                    Source {source.source_number} &middot; {source.filename},
+                    p.{source.page_number}
+                  </span>
+                ))}
               </div>
             )}
-          </article>
+          </div>
         ))}
 
-        {isSending && <p>Searching the document...</p>}
+        {isSending && (
+          <div className="chat-message chat-message--assistant">
+            <div className="chat-bubble chat-bubble--pending">
+              Searching the document...
+            </div>
+          </div>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="question">Ask a question</label>
+      <form className="chat-input-form" onSubmit={handleSubmit}>
+        <label htmlFor="question" className="sr-only">
+          Ask a question
+        </label>
 
         <textarea
           id="question"
+          className="chat-input"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           placeholder="What is the main idea of this document?"
-          rows={4}
+          rows={2}
           disabled={isSending}
         />
 
-        <button type="submit" disabled={isSending || !question.trim()}>
-          {isSending ? "Generating answer..." : "Ask"}
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={isSending || !question.trim()}
+        >
+          {isSending ? "Asking..." : "Ask"}
         </button>
       </form>
 
-      {error && <p role="alert">Error: {error}</p>}
+      {error && (
+        <p className="banner banner--error" role="alert">
+          {error}
+        </p>
+      )}
     </section>
   );
 }

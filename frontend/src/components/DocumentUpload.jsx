@@ -59,43 +59,66 @@ function DocumentUpload({ onUploadSuccess }) {
   }
 
   return (
-    <section>
-      <h2>Upload a document</h2>
+    <section className="card">
+      <div>
+        <h2>Upload a document</h2>
+        <p className="card-hint">PDF files up to 10 MB.</p>
+      </div>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="pdf-file">Choose a PDF</label>
-
+      <form className="upload-form" onSubmit={handleSubmit}>
+        <div className="file-field">
           <input
             id="pdf-file"
             type="file"
             accept=".pdf,application/pdf"
             onChange={handleFileChange}
+            className="file-input-hidden"
           />
+
+          <label htmlFor="pdf-file" className="file-trigger">
+            Choose a PDF
+          </label>
+
+          <p className="file-chip">
+            {selectedFile ? `Selected: ${selectedFile.name}` : "No file chosen"}
+          </p>
         </div>
 
-        {selectedFile && (
-          <p>
-            Selected file: <strong>{selectedFile.name}</strong>
-          </p>
-        )}
-
-        <button type="submit" disabled={!selectedFile || isUploading}>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          disabled={!selectedFile || isUploading}
+        >
           {isUploading ? "Processing PDF..." : "Upload PDF"}
         </button>
       </form>
 
-      {error && <p role="alert">Error: {error}</p>}
+      {error && (
+        <p className="banner banner--error" role="alert">
+          {error}
+        </p>
+      )}
 
       {uploadResult && (
-        <div>
+        <div className="result-card">
           <h3>Document ready</h3>
 
-          <p>Filename: {uploadResult.original_filename}</p>
+          <dl className="result-stats">
+            <div>
+              <dt>Filename</dt>
+              <dd>{uploadResult.original_filename}</dd>
+            </div>
 
-          <p>Pages processed: {uploadResult.page_count}</p>
+            <div>
+              <dt>Pages</dt>
+              <dd>{uploadResult.page_count}</dd>
+            </div>
 
-          <p>Chunks created: {uploadResult.chunk_count}</p>
+            <div>
+              <dt>Chunks</dt>
+              <dd>{uploadResult.chunk_count}</dd>
+            </div>
+          </dl>
         </div>
       )}
     </section>
