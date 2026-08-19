@@ -230,6 +230,7 @@ def answer_document_question(
     return {
          "answer": answer,
          "sources": sources,
+         "context": context,
          "model": model_name,
          "retrieval_query": retrieval_query,
     }
