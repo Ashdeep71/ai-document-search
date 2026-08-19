@@ -1,6 +1,5 @@
 import os
 from typing import Any
-from xml.parsers.expat import model
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pathlib import Path
@@ -15,7 +14,7 @@ ENV_FILE = BACKEND_DIRECTORY / ".env"
 load_dotenv(ENV_FILE)
 
 
-DEFAULT_CHAT_MODEL = "gpt-5.6-luna"
+DEFAULT_CHAT_MODEL = "gpt-4o-mini"
 
 RAG_INSTRUCTIONS = """
 You are a document question-answering assistant.

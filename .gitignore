@@ -21,3 +21,6 @@ backend/data/processed/*
 
 backend/data/vectorstores/*
 !backend/data/vectorstores/.gitkeep
+
+# Generated evaluation results
+backend/evaluation/results/

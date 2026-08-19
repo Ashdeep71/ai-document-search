@@ -16,7 +16,7 @@ logger= logging.getLogger(__name__)
 
 class DocumentSearchRequest(BaseModel):
     query: str = Field(
-       min_Length=1,
+       min_length=1,
        max_length= 500,
     )
     k: int= Field(
@@ -276,7 +276,7 @@ def ask_document(
 
 
  return {
-     "doucment_id": document_id_string,
+     "document_id": document_id_string,
      "question": request.question,
      **rag_result,
  }
