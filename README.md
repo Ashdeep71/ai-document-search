@@ -58,6 +58,7 @@ For each question, the application retrieves the most relevant chunks and suppli
 | Document processing | pypdf, LangChain text splitters |
 | Retrieval | OpenAI embeddings, FAISS |
 | Answer generation | OpenAI chat models through LangChain |
+| Deployment | Docker, Docker Compose |
 
 ## Project structure
 
@@ -73,13 +74,16 @@ ai-document-search/
 |   |   `-- vectorstores/   # Per-document FAISS indexes
 |   |-- evaluation/         # Retrieval and generation-quality evaluation scripts
 |   |-- tests/              # Automated backend tests (pytest)
+|   |-- Dockerfile
 |   `-- pyproject.toml
 |-- frontend/
 |   |-- public/
 |   |-- screenshots/        # UI screenshots used in this README
 |   |-- src/
 |   |   `-- components/     # Upload and document-chat interfaces
+|   |-- Dockerfile
 |   `-- package.json
+|-- docker-compose.yml
 `-- README.md
 ```
 
@@ -127,6 +131,36 @@ Open `http://localhost:5173` in a browser. By default, the frontend connects to 
 
 ```env
 VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
+## Running with Docker
+
+As an alternative to the manual setup above, the whole application can be built and run with Docker Compose — no local Python or Node installation required.
+
+### Prerequisites
+
+- Docker Desktop (or Docker Engine + Compose) installed and running
+- `backend/.env` configured as described above (`OPENAI_API_KEY` is required)
+
+### Build and start both services
+
+From the repository root:
+
+```bash
+docker compose up --build
+```
+
+This builds two images — the FastAPI backend and a static build of the frontend served through nginx — and starts both. Once running:
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000` (interactive docs at `/docs`)
+
+Uploaded PDFs, processed chunks, and FAISS indexes are written to `backend/data/` on the host machine through a bind mount, so they persist across container restarts and rebuilds.
+
+Stop everything with:
+
+```bash
+docker compose down
 ```
 
 ## Using the application
@@ -196,7 +230,7 @@ The generated answers should be treated as reading assistance rather than author
 - Scanned or image-only PDFs are not supported because optical character recognition is not implemented.
 - Password-protected PDFs cannot be processed.
 - Generated files and indexes are stored locally without a database or user-account layer.
-- Production deployment configuration (containerization, hosting, CI) is not yet included.
+- A Docker Compose setup is included for running the app in containers, but hosting and CI/CD configuration for a real production deployment are not yet included.
 
 ## Future directions
 
